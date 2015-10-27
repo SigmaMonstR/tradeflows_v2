@@ -218,26 +218,22 @@
     var countries = svg.append("g").attr("id", "countries");
     var centroids = svg.append("g").attr("id", "centroids");
     var arcs = svg.append("g").attr("id", "arcs"); 
-   
- 
-         
-//FOREGROUND MAP 
-
-    
-d3.loadData()
-      .json('countries', 'world-countries.json')
-      .csv('nodes', 'nodes.csv')
-      .csv('flows', 'flows.csv')
-      .onload(function(data) {    
-    
-   d3.select("#loading").attr("visibility", "hidden");
-
         
-    //
-        var nodeDataByCode = {}, links = []; //
+     
+//BACKGROUND RUNS ON LOAD
+    
+    d3.loadData()
+      .json('countries_2', 'world-countries.json')
+      .csv('nodes_2', 'nodes.csv')
+      .csv('flows_2', 'flows.csv')
+      .onload(function(data) {
+
+        d3.select("#loading").attr("visibility", "hidden");
+
+        var nodeDataByCode = {}, links = [];
         var year = '2014';
         var maxMagnitude =
-          d3.max(data.flows, function(d) { return parseFloat(d[year])});
+          d3.max(data.flows_2, function(d) { return parseFloat(d[year])});
         var magnitudeFormat = d3.format(",.0f");
 
     //STYLE ARCS
@@ -247,52 +243,41 @@ d3.loadData()
         var arcColor = d3.scale.log().domain([1, maxMagnitude]).range([minColor, maxColor]);
         var arcOpacity = d3.scale.log().domain([1, maxMagnitude]).range([1, 1]);
 
-    //FUNC of lat longs, set nulls if locayion is missing
+
+        countries_2.selectAll("path")
+          .data(data.countries_2.features)
+          .enter().append("path")
+          .attr("d", path);
+
         function nodeCoords(node) { 
           var lon = parseFloat(node.Lon), lat = parseFloat(node.Lat);
           if (isNaN(lon) || isNaN(lat)) return null;
           return [lon, lat]; 
         }
 
-    //set coords using func
-        data.nodes.forEach(function(node) {
+        data.nodes_2.forEach(function(node) {
           node.coords = nodeCoords(node);
           node.projection = node.coords ? projection(node.coords) : undefined;
           nodeDataByCode[node.Code] = node;
         });
-        
-    //FILTER data
-        data.flows = data.flows.filter(function(d) { 
-            return (d.Origin == location_code);  
-            console.log(location_code);
-        });
-    
-    //Apply a loop over the FLOW dataset to specify each of the parameters
-        data.flows.forEach(function(flow) {
+
+        data.flows_2.forEach(function(flow) {
           var o = nodeDataByCode[flow.Origin], co = o.coords, po = o.projection;
           var d = nodeDataByCode[flow.Dest], cd = d.coords, pd = d.projection;
-          var magnitude = parseFloat(flow[year]);
-          var state_rank= parseFloat(flow.state_rank);
-          var share= parseFloat(flow.share);
-          var growth_rate= parseFloat(flow.growth_rate);
-          var lq = parseFloat(flow.lq);
+          var magnitude = parseFloat(flow.lq);
           if (co  &&  cd  &&  !isNaN(magnitude)) {
             links.push({
               source: co, target: cd,
               magnitude: magnitude,
-              state_rank: state_rank,
-              share: share,
-              growth_rate: growth_rate,
-              lq: lq,
               origin:o, dest:d,
               originp: po, destp:pd 
             });
           }
         });
 
-    //Draw all of the location centroids using the previously defined centroids
-        centroids.selectAll("circle")
-          .data(data.nodes.filter(function(node) { return node.projection ? true : false }))
+
+        centroids_v2.selectAll("circle")
+          .data(data.nodes_2.filter(function(node) { return node.projection ? true : false }))
         .enter().append("circle")
           .attr("cx", function(d) { return d.projection[0] } )
           .attr("cy", function(d) { return d.projection[1] } )
@@ -302,7 +287,7 @@ d3.loadData()
           ;
 
 
-    //Arc stroke calculations
+
         var strokeFun = function(d) { return arcColor(d.magnitude); };
 
         function splitPath(path) {
@@ -358,7 +343,7 @@ d3.loadData()
 
         var gradient = defs.selectAll("linearGradient")
           .data(links)
-          .enter()
+        .enter()
           .append("svg:linearGradient")
             .attr("id", gradientNameFun)
             .attr("gradientUnits", "userSpaceOnUse")
@@ -382,11 +367,12 @@ d3.loadData()
             .attr("stop-color", strokeFun)
             .attr("stop-opacity", 1.0);
 
-    //
-        var arcNodes = arcs.selectAll("path")
+
+
+        var arcNodes = arcs_2.selectAll("path")
           .data(links)
-          .enter().append("path")
-          //.attr("visibility", function(d) { return d.magnitude > 500 ? "visible" : "hidden"}) //func to remove tiny arcs
+        .enter().append("path")
+          //.attr("visibility", function(d) { return d.magnitude > 500 ? "visible" : "hidden"})
           .attr("stroke", gradientRefNameFun)
           //.attr("stroke", "red")
           //.attr("opacity", function(d) { return arcOpacity(d.magnitude); })
@@ -407,46 +393,16 @@ d3.loadData()
             if (isNaN(a)) if (isNaN(b)) return 0; else return -1; if (isNaN(b)) return 1;
             return d3.ascending(a, b); 
           });
-    
-    //Mouseover/mouseout reaction
-        arcNodes.on("mouseover", function(d) { 
-          d3.select(this)
-            .attr("stroke", "yellow")
-            .attr("stroke-width", 20)
-            .attr("marker-end", "url(#arrowHead)");
-        })
-        arcNodes.on("mouseout", function(d) {
-            d3.select(this)
-              .attr("marker-end", "none")
-              .attr("stroke-width", function(d) { return arcWidth(d.magnitude); })
-              .attr("stroke", gradientRefNameFun); })
-        ;
-
-    //Tooltip popup text
-        arcNodes.append("svg:title")
-          .text(function(d) {
-            return d.origin.Name.toUpperCase()+" to "+d.dest.Name.toUpperCase()+"\n"+
-                   "* $"+magnitudeFormat(d.magnitude) + " in exports (" +year+")\n"+
-                   "* #"+ d.state_rank + " trade partner ("+ d.share +"% share of "+d.origin.Name+")" + "\n"+
-                   "* "+d.growth_rate+"% compound annual growth of since 2009" + "\n"+
-                   "* "+ d.lq+"x (relative strength of trade relationship) \n" ; 
-        })
-           .attr("font-size", "5em")
-        ;
-
+     
         /*
         setTimeout(function() {
-          arcs.selectAll("path").attr("marker-end", "url(#arrowHead)");
+          arcs_2.selectAll("path").attr("marker-end", "url(#arrowHead)");
         }, 0);
         */
-        
-  
-                
-      });
-};
-        
 
-            
+      });
+    
+      
     </script>
   </body>
 </html>
