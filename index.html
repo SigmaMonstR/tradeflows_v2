@@ -169,7 +169,7 @@
         var arcWidth = d3.scale.pow().domain([1, maxMagnitude]).range([0.1, 100]);
         var minColor = '#0066CC', 
             maxColor = '#CC0000';
-        var arcColor = d3.scale.log().domain([1, maxMagnitude]).range([minColor, maxColor]);
+        var arcColor = d3.scale.domain([1, maxMagnitude]).range([minColor, maxColor]);
         var arcOpacity = d3.scale.log().domain([1, maxMagnitude]).range([1, 1]);
 
         countries.selectAll("path")
@@ -189,14 +189,24 @@
           nodeDataByCode[node.Code] = node;
         });
 
+     
+    //Apply a loop over the FLOW dataset to specify each of the parameters
         data.flows.forEach(function(flow) {
           var o = nodeDataByCode[flow.Origin], co = o.coords, po = o.projection;
           var d = nodeDataByCode[flow.Dest], cd = d.coords, pd = d.projection;
-          var magnitude = parseFloat(flow.lq);
+          var magnitude = parseFloat(flow[year]);
+          var state_rank= parseFloat(flow.state_rank);
+          var share= parseFloat(flow.share);
+          var growth_rate= parseFloat(flow.growth_rate);
+          var lq = parseFloat(flow.lq);
           if (co  &&  cd  &&  !isNaN(magnitude)) {
             links.push({
               source: co, target: cd,
               magnitude: magnitude,
+              state_rank: state_rank,
+              share: share,
+              growth_rate: growth_rate,
+              lq: lq,
               origin:o, dest:d,
               originp: po, destp:pd 
             });
