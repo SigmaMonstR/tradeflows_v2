@@ -324,6 +324,32 @@
             return d3.ascending(a, b); 
           });
      
+        
+    //Mouseover/mouseout reaction
+        arcNodes.on("mouseover", function(d) { 
+          d3.select(this)
+            .attr("stroke", "yellow")
+            .attr("stroke-width", 20)
+            .attr("marker-end", "url(#arrowHead)");
+        })
+        arcNodes.on("mouseout", function(d) {
+            d3.select(this)
+              .attr("marker-end", "none")
+              .attr("stroke-width", function(d) { return arcWidth(d.magnitude); })
+              .attr("stroke", gradientRefNameFun); })
+        ;
+    //Tooltip popup text
+        arcNodes.append("svg:title")
+          .text(function(d) {
+            return d.origin.Name.toUpperCase()+" to "+d.dest.Name.toUpperCase()+"\n"+
+                   "* $"+magnitudeFormat(d.magnitude) + " in exports (" +year+")\n"+
+                   "* #"+ d.state_rank + " trade partner ("+ d.share +"% share of "+d.origin.Name+")" + "\n"+
+                   "* "+d.growth_rate+"% compound annual growth of since 2009" + "\n"+
+                   "* "+ d.lq+"x (relative strength of trade relationship) \n" ; 
+        })
+           .attr("font-size", "5em")
+        ;
+
         /*
         setTimeout(function() {
           arcs_2.selectAll("path").attr("marker-end", "url(#arrowHead)");
