@@ -78,7 +78,7 @@
     var useGreatCircles = true;
 
         
-    //CLICK
+  
     d3.loadData = function() {
         var loadedCallback = null;
         var toload = {};
@@ -124,14 +124,6 @@
         .translate([480, 300])
         .scale(200);
    
-    /*
-     var projection = d3.geo.albers()
-            .origin([-500, 300])
-            .scale(100);  
-      var projection = d3.geo.azimuthal()
-            .origin([80, 400])
-            .scale(200);
-    */
 
     //Link path set to the projection
     var path = d3.geo.path()
@@ -178,8 +170,8 @@
         var arcWidth = d3.scale.pow().domain([0.1, maxMagnitude]).range([0.1, 100]);
         var minColor = '#0066CC', 
             maxColor = '#CC0000';
-        var arcColor = d3.scale.log().domain([0.1, maxMagnitude]).range([minColor, maxColor]);
-        var arcOpacity = d3.scale.log().domain([0.1, maxMagnitude]).range([0.1, 1]);
+        var arcColor = d3.scale.log().domain([0.1, 10]).range([minColor, maxColor]);
+        var arcOpacity = d3.scale.log().domain([0.1, 10]).range([0.1, 1]);
 
 
         countries_2.selectAll("path")
@@ -310,11 +302,11 @@
         var arcNodes = arcs_2.selectAll("path")
           .data(links)
         .enter().append("path")
-          //.attr("visibility", function(d) { return d.magnitude > 500 ? "visible" : "hidden"})
+          .attr("visibility", function(d) { return d.magnitude > 500 ? "visible" : "hidden"})
           .attr("stroke", gradientRefNameFun)
-          //.attr("stroke", "red")
-          //.attr("opacity", function(d) { return arcOpacity(d.magnitude); })
-          //.attr("stroke", strokeFun)
+          .attr("stroke", "red")
+          .attr("opacity", function(d) { return arcOpacity(d.magnitude); })
+          .attr("stroke", strokeFun)
           .attr("stroke-linecap", "round")
           .attr("stroke-width", function(d) { return arcWidth(d.magnitude); })
           .attr("d", function(d) { 
