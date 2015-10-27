@@ -19,7 +19,7 @@
       stroke: #333333;
     }
 
-    #arcs_2 path {
+    #arcs path {
       fill: none;
       stroke-opacity: .8;
     }
@@ -61,65 +61,6 @@
     <!--Sidebar-->
     <div class="sidebar">
          <h3><strong>Export Flows </strong><br> between States + Partner Countries</h3>
-        
-        <!--drop down menu, default to no state-->
-         <select id = "opts" >
-            <option value="0"  selected="selected">Choose a state</option>
-            <option value="239">Alabama</option>
-            <option value="239">Alabama</option>
-            <option value="240">Alaska</option>
-            <option value="241">Arizona</option>
-            <option value="242">Arkansas</option>
-            <option value="243" >California</option>
-            <option value="244">Colorado</option>
-            <option value="245">Connecticut</option>
-            <option value="246">Delaware</option>
-            <option value="247">District of Columbia</option>
-            <option value="248">Florida</option>
-            <option value="249">Hawaii</option>
-            <option value="250">Idaho</option>
-            <option value="251">Illinois</option>
-            <option value="252">Indiana</option>
-            <option value="253">Iowa</option>
-            <option value="254">Kansas</option>
-            <option value="255">Kentucky</option>
-            <option value="256">Louisiana</option>
-            <option value="257">Maine</option>
-            <option value="258">Maryland</option>
-            <option value="259">Massachusetts</option>
-            <option value="260">Michigan</option>
-            <option value="261">Minnesota</option>
-            <option value="262">Mississippi</option>
-            <option value="263">Missouri</option>
-            <option value="264">Montana</option>
-            <option value="265">Nebraska</option>
-            <option value="266">Nevada</option>
-            <option value="267">New Hampshire</option>
-            <option value="268">New Jersey</option>
-            <option value="269">New Mexico</option>
-            <option value="270">New York</option>
-            <option value="271">North Carolina</option>
-            <option value="272">North Dakota</option>
-            <option value="273">Ohio</option>
-            <option value="274">Oklahoma</option>
-            <option value="275">Oregon</option>
-            <option value="276">Pennsylvania</option>
-            <option value="277">Puerto Rico</option>
-            <option value="278">Rhode Island</option>
-            <option value="279">South Carolina</option>
-            <option value="280">South Dakota</option>
-            <option value="281">Tennessee</option>
-            <option value="282">Texas</option>
-            <option value="283">Utah</option>
-            <option value="284">Vermont</option>
-            <option value="285">Virgin Islands</option>
-            <option value="286">Virginia</option>
-            <option value="287">Washington</option>
-            <option value="288">West Virginia</option>
-            <option value="289">Wisconsin</option>
-            <option value="290">Wyoming</option>
-
-         </select>   
         
           <!--description-->
          <h5>US conducts export trade with more than 200 countries around the world. Each state has a different export trade profile. <br><br> Arcs indicate a trade relationship exists between a state and a country. Redder and thicker lines indicate more trade whereas bluer thin lines indicate less trade. <br><br>  </h5>
@@ -182,14 +123,6 @@
         .translate([480, 300])
         .scale(200);
    
-    /*
-     var projection = d3.geo.albers()
-            .origin([-500, 300])
-            .scale(100);  
-      var projection = d3.geo.azimuthal()
-            .origin([80, 400])
-            .scale(200);
-    */
 
     //Link path set to the projection
     var path = d3.geo.path()
@@ -210,11 +143,7 @@
       .attr("font-family", "Helvetica")
       .attr("color","white")
       .text("Loading US Dept of Commerce Export Data Awesomeness...");
-     
-    var countries = svg.append("g").attr("id", "countries");
-    var centroids_v2 = svg.append("g").attr("id", "centroids_v2");
-    var arcs_2 = svg.append("g").attr("id", "arcs_2");
-
+   
     var countries = svg.append("g").attr("id", "countries");
     var centroids = svg.append("g").attr("id", "centroids");
     var arcs = svg.append("g").attr("id", "arcs"); 
@@ -275,7 +204,7 @@
         });
 
 
-        centroids_v2.selectAll("circle")
+        centroids.selectAll("circle")
           .data(data.nodes.filter(function(node) { return node.projection ? true : false }))
         .enter().append("circle")
           .attr("cx", function(d) { return d.projection[0] } )
@@ -368,7 +297,7 @@
 
 
 
-        var arcNodes = arcs_2.selectAll("path")
+        var arcNodes = arcs.selectAll("path")
           .data(links)
         .enter().append("path")
           //.attr("visibility", function(d) { return d.magnitude > 500 ? "visible" : "hidden"})
@@ -421,7 +350,7 @@
 
         /*
         setTimeout(function() {
-          arcs_2.selectAll("path").attr("marker-end", "url(#arrowHead)");
+          arcs.selectAll("path").attr("marker-end", "url(#arrowHead)");
         }, 0);
         */
 
