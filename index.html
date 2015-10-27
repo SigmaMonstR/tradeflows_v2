@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-   <script type="text/javascript" src="http://mbostock.github.com/d3/d3.v2.js"></script>
+   <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"> </script>
@@ -14,6 +14,16 @@
      <style type="text/css">
    
 
+    #countries_2 path {
+      fill: #1A1A1A;
+      stroke: #333333;
+    }
+
+    #arcs_2 path {
+      fill: none;
+      stroke-opacity: .8;
+    }
+         
     #countries path {
       fill: #1A1A1A;
       stroke: #333333;
@@ -21,8 +31,9 @@
 
     #arcs path {
       fill: none;
-      stroke-opacity: .4;
+      stroke-opacity: .8;
     }
+         
      div.sidebar {
           
             position: absolute;
@@ -37,35 +48,95 @@
         color: white;
     }
 
-      img {
-            position: absolute;
-            right: -30%;
-            top: 0px;
-            opacity: 0.1;
-            z-index: -1;
-        }
 
     </style>
+    
   </head>
   </head>
   <body>
+    
+    <!--chart gets put here-->
     <div id="chart"></div>
+      
+    <!--Sidebar-->
     <div class="sidebar">
-         <h3><strong>Export Flows </strong></h3>
-           <div id = "opts" >
-             <option value="0"></option>
-            </div>   
-         <h5>US conducts export trade with more than 200 countries around the world. Each state has a different export trade profile. <br><br> Arcs indicate a trade relationship exists between a state and a country. Redder, thicker lines indicate more trade whereas bluer thinner lines indicate less trade. <br><br> <strong> International Trade Administration <br>+ the Commerce Data Corps</strong> </h5>
+         <h3><strong>Export Flows </strong><br> between States + Partner Countries</h3>
+        
+        <!--drop down menu, default to no state-->
+         <select id = "opts" >
+            <option value="0"  selected="selected">Choose a state</option>
+            <option value="239">Alabama</option>
+            <option value="239">Alabama</option>
+            <option value="240">Alaska</option>
+            <option value="241">Arizona</option>
+            <option value="242">Arkansas</option>
+            <option value="243" >California</option>
+            <option value="244">Colorado</option>
+            <option value="245">Connecticut</option>
+            <option value="246">Delaware</option>
+            <option value="247">District of Columbia</option>
+            <option value="248">Florida</option>
+            <option value="249">Hawaii</option>
+            <option value="250">Idaho</option>
+            <option value="251">Illinois</option>
+            <option value="252">Indiana</option>
+            <option value="253">Iowa</option>
+            <option value="254">Kansas</option>
+            <option value="255">Kentucky</option>
+            <option value="256">Louisiana</option>
+            <option value="257">Maine</option>
+            <option value="258">Maryland</option>
+            <option value="259">Massachusetts</option>
+            <option value="260">Michigan</option>
+            <option value="261">Minnesota</option>
+            <option value="262">Mississippi</option>
+            <option value="263">Missouri</option>
+            <option value="264">Montana</option>
+            <option value="265">Nebraska</option>
+            <option value="266">Nevada</option>
+            <option value="267">New Hampshire</option>
+            <option value="268">New Jersey</option>
+            <option value="269">New Mexico</option>
+            <option value="270">New York</option>
+            <option value="271">North Carolina</option>
+            <option value="272">North Dakota</option>
+            <option value="273">Ohio</option>
+            <option value="274">Oklahoma</option>
+            <option value="275">Oregon</option>
+            <option value="276">Pennsylvania</option>
+            <option value="277">Puerto Rico</option>
+            <option value="278">Rhode Island</option>
+            <option value="279">South Carolina</option>
+            <option value="280">South Dakota</option>
+            <option value="281">Tennessee</option>
+            <option value="282">Texas</option>
+            <option value="283">Utah</option>
+            <option value="284">Vermont</option>
+            <option value="285">Virgin Islands</option>
+            <option value="286">Virginia</option>
+            <option value="287">Washington</option>
+            <option value="288">West Virginia</option>
+            <option value="289">Wisconsin</option>
+            <option value="290">Wyoming</option>
+
+         </select>   
+        
+          <!--description-->
+         <h5>US conducts export trade with more than 200 countries around the world. Each state has a different export trade profile. <br><br> Arcs indicate a trade relationship exists between a state and a country. Redder and thicker lines indicate more trade whereas bluer thin lines indicate less trade. <br><br>  </h5>
      </div>
         
-      
-    <script type="text/javascript"> 
+<!--d3 code starts heree-->      
+ <script type="text/javascript"> 
     
+    //Dimensions of frame
     var w = innerWidth,
         h = innerHeight;
 
+    //Boolean for great circles calculation
     var useGreatCircles = true;
 
+        
+    //CLICK
     d3.loadData = function() {
         var loadedCallback = null;
         var toload = {};
@@ -75,6 +146,8 @@
           data[name] = d;
           return notifyIfAll();
         };
+        
+        //
         var notifyIfAll = function() {
           if ((loadedCallback != null) && d3.keys(toload).length === 0) {
             loadedCallback(data);
@@ -104,92 +177,94 @@
       };
 
 
-
+    //Set geographic projection for map
     var projection = d3.geo.mercator()
         .translate([480, 300])
-        .scale(1200);
-   
-/*
-
- var projection = d3.geo.albers()
-        .origin([-500, 300])
-        .scale(100);  
-  var projection = d3.geo.azimuthal()
-        .origin([80, 400])
         .scale(200);
+   
+    /*
+     var projection = d3.geo.albers()
+            .origin([-500, 300])
+            .scale(100);  
+      var projection = d3.geo.azimuthal()
+            .origin([80, 400])
+            .scale(200);
+    */
 
-*/
-
+    //Link path set to the projection
     var path = d3.geo.path()
         .projection(projection);
 
     var arc = d3.geo.greatArc().precision(3) //3);
 
+    //Create file with the full canvas dimensions with pre-load screen
     var svg = d3.select("body").append("svg")
         .attr("width", w)
         .attr("height", h);
-
-    var countries = svg.append("g").attr("id", "countries");
-    var centroids = svg.append("g").attr("id", "centroids");
-    var arcs = svg.append("g").attr("id", "arcs");
-
+             
     svg.append("text")
       .attr("id", "loading")
       .attr("x", 5)
       .attr("y", 17)
       .attr("font-size", "12pt")
       .attr("font-family", "Helvetica")
-      .attr("font-color","white")
+      .attr("color","white")
       .text("Loading US Dept of Commerce Export Data Awesomeness...");
+     
 
-    d3.loadData()
+    var countries = svg.append("g").attr("id", "countries");
+    var centroids = svg.append("g").attr("id", "centroids");
+    var arcs = svg.append("g").attr("id", "arcs"); 
+   
+ 
+         
+//FOREGROUND MAP 
+
+    
+d3.loadData()
       .json('countries', 'world-countries.json')
       .csv('nodes', 'nodes.csv')
       .csv('flows', 'flows.csv')
-      .onload(function(data) {
+      .onload(function(data) {    
+    
+   d3.select("#loading").attr("visibility", "hidden");
 
-        d3.select("#loading").attr("visibility", "hidden");
-
-        var nodeDataByCode = {}, links = [];
+        
+    //
+        var nodeDataByCode = {}, links = []; //
         var year = '2014';
         var maxMagnitude =
           d3.max(data.flows, function(d) { return parseFloat(d[year])});
         var magnitudeFormat = d3.format(",.0f");
 
-        var arcWidth = d3.scale.linear().domain([1, maxMagnitude]).range([1, 100]);
-        var minColor = '#0066CC', maxColor = '#CC0000';
+    //STYLE ARCS
+        var arcWidth = d3.scale.pow().domain([1, maxMagnitude]).range([0.1, 100]);
+        var minColor = '#0066CC', 
+            maxColor = '#CC0000';
         var arcColor = d3.scale.log().domain([1, maxMagnitude]).range([minColor, maxColor]);
-        var arcOpacity = d3.scale.log().domain([1, maxMagnitude]).range([0.4, 1]);
+        var arcOpacity = d3.scale.log().domain([1, maxMagnitude]).range([1, 1]);
 
-        countries.selectAll("path")
-          .data(data.countries.features)
-          .enter().append("path")
-          .attr("d", path);
-
-
-
-
-
+    //FUNC of lat longs, set nulls if locayion is missing
         function nodeCoords(node) { 
           var lon = parseFloat(node.Lon), lat = parseFloat(node.Lat);
           if (isNaN(lon) || isNaN(lat)) return null;
           return [lon, lat]; 
         }
 
+    //set coords using func
         data.nodes.forEach(function(node) {
           node.coords = nodeCoords(node);
           node.projection = node.coords ? projection(node.coords) : undefined;
           nodeDataByCode[node.Code] = node;
         });
-
         
-    
+    //FILTER data
         data.flows = data.flows.filter(function(d) { 
-            return (d.Origin == document.getElementById('opts').value);  
+            return (d.Origin == location_code);  
+            console.log(location_code);
         });
-        
     
-
+    //Apply a loop over the FLOW dataset to specify each of the parameters
         data.flows.forEach(function(flow) {
           var o = nodeDataByCode[flow.Origin], co = o.coords, po = o.projection;
           var d = nodeDataByCode[flow.Dest], cd = d.coords, pd = d.projection;
@@ -212,7 +287,7 @@
           }
         });
 
-
+    //Draw all of the location centroids using the previously defined centroids
         centroids.selectAll("circle")
           .data(data.nodes.filter(function(node) { return node.projection ? true : false }))
         .enter().append("circle")
@@ -224,7 +299,7 @@
           ;
 
 
-
+    //Arc stroke calculations
         var strokeFun = function(d) { return arcColor(d.magnitude); };
 
         function splitPath(path) {
@@ -280,7 +355,7 @@
 
         var gradient = defs.selectAll("linearGradient")
           .data(links)
-        .enter()
+          .enter()
           .append("svg:linearGradient")
             .attr("id", gradientNameFun)
             .attr("gradientUnits", "userSpaceOnUse")
@@ -304,12 +379,11 @@
             .attr("stop-color", strokeFun)
             .attr("stop-opacity", 1.0);
 
-
-
+    //
         var arcNodes = arcs.selectAll("path")
           .data(links)
-        .enter().append("path")
-          //.attr("visibility", function(d) { return d.magnitude > 500 ? "visible" : "hidden"})
+          .enter().append("path")
+          //.attr("visibility", function(d) { return d.magnitude > 500 ? "visible" : "hidden"}) //func to remove tiny arcs
           .attr("stroke", gradientRefNameFun)
           //.attr("stroke", "red")
           //.attr("opacity", function(d) { return arcOpacity(d.magnitude); })
@@ -330,6 +404,8 @@
             if (isNaN(a)) if (isNaN(b)) return 0; else return -1; if (isNaN(b)) return 1;
             return d3.ascending(a, b); 
           });
+    
+    //Mouseover/mouseout reaction
         arcNodes.on("mouseover", function(d) { 
           d3.select(this)
             .attr("stroke", "yellow")
@@ -343,7 +419,7 @@
               .attr("stroke", gradientRefNameFun); })
         ;
 
-
+    //Tooltip popup text
         arcNodes.append("svg:title")
           .text(function(d) {
             return d.origin.Name.toUpperCase()+" to "+d.dest.Name.toUpperCase()+"\n"+
@@ -360,9 +436,14 @@
           arcs.selectAll("path").attr("marker-end", "url(#arrowHead)");
         }, 0);
         */
-
+        
+  
+                
       });
-    
+};
+        
+
+            
     </script>
   </body>
 </html>
